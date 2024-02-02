@@ -1,0 +1,11 @@
+fastapi[all]
+uvicorn[all]
+bcrypt
+motor
+aioredis
+aiofiles
+asyncio
+python-dotenv 
+python-jose
+pyotp
+pytz
