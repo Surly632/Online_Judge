@@ -1,3 +1,6 @@
 /__pycache__/
+<<<<<<< HEAD
 .env
+=======
+>>>>>>> ff3e212 ('initial')
 helper.py
