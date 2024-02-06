@@ -21,9 +21,9 @@ class JwtService:
             return {}
     
     @classmethod
-    async def decodeToken(token:str):
+    async def decodeToken(cls,token:str):
         try:
-            data = jwt.decode(token,os.getenv('SECRET_KEY'),os.getenv('ALGORITHM'))
+            data = jwt.decode(token,os.getenv('SECRET_KEY'),os.getenv('ALGORITHM'),audience='oj')
             return data
         except Exception as e:
             print(f'Decode token exception: {e}')

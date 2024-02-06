@@ -27,6 +27,8 @@ async def create_db():
         await collection.create_index([("status", 1)],sparse=True)
         await collection.create_index([("isEmailVerified", 1)],sparse=True)
         await collection.create_index([("isActivated", 1)])
+        # await collection.create_index([("isLoggedIn", 1)],sparse=True)
+        # await collection.create_index([("deviceInfo", 1)],sparse=True)
         await collection.create_index([("role", 1)],sparse=True)
         await collection.create_index([("updated_at", 1)],sparse=True)
 

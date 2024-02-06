@@ -1,8 +1,10 @@
 import json
+import logging
 
-from config.redis import get_redis_signup
+from config.redis import get_redis_blocked_token, get_redis_signup
 
 class UserAuthRedisRepository:
+  
     @classmethod
     async def saveUserSignUpData(cls,user_data:dict()):
         redis = await get_redis_signup()
@@ -33,3 +35,16 @@ class UserAuthRedisRepository:
         except Exception as e:
             print(f'exception from auth redis validate user: {e}')
         
+    @classmethod
+    async def userLogin(user_data:dict()):
+        pass
+
+    @classmethod
+    async def userLogout(cls,token: str, username:str):
+        redis = await get_redis_blocked_token()
+        try:
+            await redis.setex(token,900,username)
+            return True
+        except Exception as e:
+            logging.error(f'Exception from userauthredisrepo userLogout:{e}')
+            return False

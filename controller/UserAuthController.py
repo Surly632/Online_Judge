@@ -32,6 +32,13 @@ async def userLogin(request:Request,db:AsyncIOMotorClient=Depends(get_db)):
     user_data =await request.json()
     return await UserAuthService.userLogin(user_data,db)
 
+@router.delete('/logout',dependencies=[Depends(JwtBearer(required_roles=['admin', 'SuperAdmin', 'User']))])
+async def userLogout(request:Request):
+    token = request.headers.get('Authorization')
+    token = token.split('Bearer ')[-1]
+    return await UserAuthService.userLogout(token) 
+
+
 @router.get('/userdetails', dependencies=[Depends(JwtBearer(required_roles=['admin', 'SuperAdmin', 'User']))])
 async def userdetails(req: Request):
     authorization = req.headers.get('Authorization')

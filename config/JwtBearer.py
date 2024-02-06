@@ -6,6 +6,8 @@ from jose import jwt
 from starlette.requests import Request
 from dotenv import load_dotenv
 
+from config.redis import get_redis_blocked_token
+
 load_dotenv()
 
 class JwtBearer(HTTPBearer):
@@ -23,7 +25,7 @@ class JwtBearer(HTTPBearer):
                 raise HTTPException(
                     status_code=403, detail="Invalid Authentication Scheme"
                 )
-            verify_status = self.verify_status(credentials.credentials)
+            verify_status = await self.verify_status(credentials.credentials)
             if not verify_status:
                 raise HTTPException(status_code=403, detail="Token is not valid")
 
@@ -38,9 +40,12 @@ class JwtBearer(HTTPBearer):
                 status_code=403, detail="Authentication scheme not found!"
             )
 
-    def verify_status(self, token: str):
+    async def verify_status(self, token: str):
+        reids = await get_redis_blocked_token()
+        if await reids.exists(token):
+            return False
         try:
-            payload = jwt.decode(token, os.getenv("SECRET_KEY"), os.getenv("ALGORITHM"))
+            payload = jwt.decode(token, os.getenv("SECRET_KEY"), os.getenv("ALGORITHM"),audience='oj')
             if payload:
                 role_in_token = payload.get('role')
                 if role_in_token in self.required_roles:    

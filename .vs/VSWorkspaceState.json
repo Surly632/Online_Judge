@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\config",
+    "\\service",
+    "\\service\\Jwt",
+    "\\service\\user"
+  ],
+  "SelectedNode": "\\service\\user\\UserAuthService.py",
+  "PreviewInSolutionExplorer": false
+}

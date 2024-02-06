@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 from config.mongoconnection import mongo_client
-from config.redis import get_redis_signup, get_redis_loggedin, get_redis_blocked
+from config.redis import get_redis_signup, get_redis_login
+from config.redis import get_redis_blocked_user,get_redis_blocked_token
 from fastapi import FastAPI
 import uvicorn
 
 port = 8088
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,15 +13,16 @@ async def lifespan(app: FastAPI):
     yield
     redis = await get_redis_signup()
     await redis.close()
-    redis = await get_redis_loggedin()
+    redis = await get_redis_login()
     await redis.close()
-    redis = await get_redis_blocked()
+    redis = await get_redis_blocked_user()
+    await redis.close()
+    redis = await get_redis_blocked_token()
     await redis.close()
     print("redis closed")
     mongo_client.close()
     print("database closed")
     print(f"server is shutting down...")
-
 
 def __init_app__():
     app = FastAPI(
