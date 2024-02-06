@@ -37,9 +37,9 @@ def __init_app__():
         return {"success": True, "message": "welcome Home"}
 
     from controller.UserAuthController import router as user_route
-
+    
     app.include_router(user_route)
-
+    
     return app
 
 

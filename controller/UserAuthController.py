@@ -44,3 +44,11 @@ async def userdetails(req: Request):
     authorization = req.headers.get('Authorization')
     token = authorization.split('Bearer ')[-1]
     return token
+
+
+@router.get('/regenerate-token',dependencies=[Depends(JwtBearer(required_roles=['admin', 'SuperAdmin', 'User']))])
+async def regenerateToken(req:Request):
+    authorization = req.headers.get('Authorization')
+    token = authorization.split('Bearer ')[-1]
+    new_token = UserAuthService.regenerateToken(token)
+    return {'token':new_token}

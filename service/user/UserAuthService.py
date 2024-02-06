@@ -164,3 +164,8 @@ class UserAuthService:
             }
         else:
             return HTTPException(status_code=500,detail='Internal Server Error')
+        
+    @classmethod
+    async def regenerateToken(token:str):
+        user_data = await JwtService.decodeToken(token)
+        return await JwtService.generateToken(user_data)
