@@ -6,6 +6,7 @@ from utils.SignupEmailGenerator import SignUpEmailGenerator
 
 
 class UserAuthRepository:
+    
     @classmethod
     async def saveUser(cls, user_data: dict(), db):
         collection = db["users"]

@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from config.mongoconnection import mongo_client
+# from config.mongoconnection import mongo_client
 from config.redis import get_redis_signup, get_redis_login
 from config.redis import get_redis_blocked_user,get_redis_blocked_token
 from fastapi import FastAPI
@@ -20,8 +20,7 @@ async def lifespan(app: FastAPI):
     redis = await get_redis_blocked_token()
     await redis.close()
     print("redis closed")
-    mongo_client.close()
-    print("database closed")
+
     print(f"server is shutting down...")
 
 def __init_app__():

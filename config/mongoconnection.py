@@ -4,12 +4,13 @@ import os
 
 load_dotenv()
 
-mongo_client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
-async def get_db():
+async def get_db()->AsyncIOMotorClient:
+    mongo_client =  AsyncIOMotorClient(os.getenv("MONGO_URL"))
     db = mongo_client.get_database(os.getenv("DATABASE"))
     try:
-        await db.command("ping")
-        print(f"connected to mongodb database")
+        yield db
     except Exception as e:
         print(e)
-    return db
+    finally:
+        mongo_client.close()
+        

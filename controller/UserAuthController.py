@@ -17,38 +17,50 @@ async def signUp(request: Users, db: AsyncIOMotorClient = Depends(get_db)):
 @router.get("/validate")
 async def validateUser(req: Request, db: AsyncIOMotorClient = Depends(get_db)):
     user_data = req.query_params.get("user")
-    print(f'user validation link: {user_data}')
-    return await UserAuthService.validateUser(user_data,db)
+    print(f"user validation link: {user_data}")
+    return await UserAuthService.validateUser(user_data, db)
 
-@router.post('/validate-user-otp')
-async def validateUserOtp(request:Request, db:AsyncIOMotorClient=Depends(get_db)):
+
+@router.post("/validate-user-otp")
+async def validateUserOtp(request: Request, db: AsyncIOMotorClient = Depends(get_db)):
     otp = await request.json()
-    otp = otp.get('otp')
+    otp = otp.get("otp")
     # print(f'otp from controller: {otp}')
     return await UserAuthService.validateUserOtp(otp, db)
 
-@router.post('/login')
-async def userLogin(request:Request,db:AsyncIOMotorClient=Depends(get_db)):
-    user_data =await request.json()
-    return await UserAuthService.userLogin(user_data,db)
 
-@router.delete('/logout',dependencies=[Depends(JwtBearer(required_roles=['admin', 'SuperAdmin', 'User']))])
-async def userLogout(request:Request):
-    token = request.headers.get('Authorization')
-    token = token.split('Bearer ')[-1]
-    return await UserAuthService.userLogout(token) 
+@router.post("/login")
+async def userLogin(request: Request, db: AsyncIOMotorClient = Depends(get_db)):
+    user_data = await request.json()
+    return await UserAuthService.userLogin(user_data, db)
 
 
-@router.get('/userdetails', dependencies=[Depends(JwtBearer(required_roles=['admin', 'SuperAdmin', 'User']))])
+@router.delete(
+    "/logout",
+    dependencies=[Depends(JwtBearer(required_roles=["admin", "SuperAdmin", "User"]))],
+)
+async def userLogout(request: Request):
+    token = request.headers.get("Authorization")
+    token = token.split("Bearer ")[-1]
+    return await UserAuthService.userLogout(token)
+
+
+@router.get(
+    "/userdetails",
+    dependencies=[Depends(JwtBearer(required_roles=["admin", "SuperAdmin", "User"]))],
+)
 async def userdetails(req: Request):
-    authorization = req.headers.get('Authorization')
-    token = authorization.split('Bearer ')[-1]
+    authorization = req.headers.get("Authorization")
+    token = authorization.split("Bearer ")[-1]
     return token
 
 
-@router.get('/regenerate-token',dependencies=[Depends(JwtBearer(required_roles=['admin', 'SuperAdmin', 'User']))])
-async def regenerateToken(req:Request):
-    authorization = req.headers.get('Authorization')
-    token = authorization.split('Bearer ')[-1]
+@router.get(
+    "/regenerate-token",
+    dependencies=[Depends(JwtBearer(required_roles=["admin", "SuperAdmin", "User"]))],
+)
+async def regenerateToken(req: Request):
+    authorization = req.headers.get("Authorization")
+    token = authorization.split("Bearer ")[-1]
     new_token = UserAuthService.regenerateToken(token)
-    return {'token':new_token}
+    return {"token": new_token}

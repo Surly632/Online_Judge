@@ -20,7 +20,7 @@ async def get_redis_login():
 
     if not url:
         raise ValueError("REDIS_URL_LOGGED_IN environment variable is not set.")
-
+    
     redis = await aioredis.from_url(url)
     return redis
 
