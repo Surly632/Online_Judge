@@ -49,7 +49,7 @@ class JwtBearer(HTTPBearer):
             if payload:
                 role_in_token = payload.get('role')
                 if role_in_token in self.required_roles:    
-                    print(f'role in token : {role_in_token}')
+                    # print(f'role in token : {role_in_token}')
                     return True
                 else:
                     return False

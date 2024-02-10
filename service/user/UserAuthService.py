@@ -7,7 +7,7 @@ import bcrypt
 from fastapi import HTTPException
 import pytz
 from datetime import datetime
-from config.redis import get_redis_login
+from config.redis import  get_redis_login
 from model.user.UserModel import Users
 from repository.user.UserAuthRedisRepository import UserAuthRedisRepository
 from repository.user.UserAuthRepository import UserAuthRepository
@@ -56,7 +56,7 @@ class UserAuthService:
         return await UserAuthRepository.validateUserOtp(json.loads(data), db)
 
     @classmethod
-    async def userLogin(cls, user_data: dict(), db):
+    async def userLogin(cls, user_data: dict, db):
 
         user = user_data.get("username", -1)
 
@@ -120,13 +120,15 @@ class UserAuthService:
                 'aud':'oj',
                  }
 
-                token= await JwtService.generateToken(data)
+                accressToken= await JwtService.generateAccessToken(data)
+                refreshToken= await JwtService.generateAccessToken(data)
 
                 return {
                     'success':True,
                     'status_code':200,
                     'message':'User login successful',
-                    'token':token,
+                    'accessToken':accressToken,
+                    'refreshToken': refreshToken
                     }
 
             elif mismatched_times>=3 and in_redis:
@@ -138,24 +140,28 @@ class UserAuthService:
             else:
 
                 data = {
-                    'id': str(document.get('_id')),
-                    'sub':document.get('username'),
-                    'role':document.get('role'),
-                    'aud':'oj'
+                    "id": str(document.get("_id")),
+                    "sub": document.get("username"),
+                    "role": document.get("role"),
+                    "aud": "oj",
                 }
-                token= await JwtService.generateToken(data)
+
+                accressToken = await JwtService.generateAccessToken(data)
+                refreshToken = await JwtService.generateAccessToken(data)
+
                 return {
-                        'success':True,
-                        'status_code':200,
-                        'message':'User login successful',
-                        'token':token,
-                        }
+                    "success": True,
+                    "status_code": 200,
+                    "message": "User login successful",
+                    "accessToken": accressToken,
+                    "refreshToken": refreshToken,
+                }
 
     @classmethod
     async def userLogout(cls,token: str):
         user_data =await JwtService.decodeToken(token)
         is_successful = await UserAuthRedisRepository.userLogout(token,user_data.get('sub'))
-        print(f'is_successful: {is_successful}')
+        # print(f'is_successful: {is_successful}')
         if is_successful:
             return {
                 "status_code": 204,
@@ -164,8 +170,25 @@ class UserAuthService:
             }
         else:
             return HTTPException(status_code=500,detail='Internal Server Error')
-        
+
     @classmethod
-    async def regenerateToken(token:str):
+    async def regenerateToken(cls,token:str):
+
         user_data = await JwtService.decodeToken(token)
-        return await JwtService.generateToken(user_data)
+        accessToken = await JwtService.generateAccessToken(user_data)
+        refreshToken = await JwtService.generateAccessToken(user_data)
+
+        is_successful = await UserAuthRedisRepository.blockToken(token, user_data.get('sub'))
+
+        if is_successful:
+            response = {
+                'status_code':200,
+                'success':True,
+                'message':'new jwt token generated',
+                'accessToken':accessToken,
+                'refreshToken':refreshToken
+             }
+            return response
+
+        else:
+            return HTTPException(status_code=500,detail='Internal server error')

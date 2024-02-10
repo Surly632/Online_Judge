@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Request
 from config.JwtBearer import JwtBearer
 from config.mongoconnection import get_db
 from model.user.UserModel import Users
-from motor.motor_asyncio import AsyncIOMotorClient
 
 from service.user.UserAuthService import UserAuthService
 
@@ -10,19 +9,19 @@ router = APIRouter(prefix="/users")
 
 
 @router.post("/create")
-async def signUp(request: Users, db: AsyncIOMotorClient = Depends(get_db)):
+async def signUp(request: Users, db = Depends(get_db)):
     return await UserAuthService.createUser(request, db)
 
 
 @router.get("/validate")
-async def validateUser(req: Request, db: AsyncIOMotorClient = Depends(get_db)):
+async def validateUser(req: Request, db = Depends(get_db)):
     user_data = req.query_params.get("user")
     print(f"user validation link: {user_data}")
     return await UserAuthService.validateUser(user_data, db)
 
 
 @router.post("/validate-user-otp")
-async def validateUserOtp(request: Request, db: AsyncIOMotorClient = Depends(get_db)):
+async def validateUserOtp(request: Request, db= Depends(get_db)):
     otp = await request.json()
     otp = otp.get("otp")
     # print(f'otp from controller: {otp}')
@@ -30,7 +29,7 @@ async def validateUserOtp(request: Request, db: AsyncIOMotorClient = Depends(get
 
 
 @router.post("/login")
-async def userLogin(request: Request, db: AsyncIOMotorClient = Depends(get_db)):
+async def userLogin(request: Request, db = Depends(get_db)):
     user_data = await request.json()
     return await UserAuthService.userLogin(user_data, db)
 
@@ -60,7 +59,8 @@ async def userdetails(req: Request):
     dependencies=[Depends(JwtBearer(required_roles=["admin", "SuperAdmin", "User"]))],
 )
 async def regenerateToken(req: Request):
-    authorization = req.headers.get("Authorization")
-    token = authorization.split("Bearer ")[-1]
-    new_token = UserAuthService.regenerateToken(token)
-    return {"token": new_token}
+    
+    refreshToken = req.json()
+    refreshToken = refreshToken.get('refreshToken')
+    
+    return await UserAuthService.regenerateToken(refreshToken)
