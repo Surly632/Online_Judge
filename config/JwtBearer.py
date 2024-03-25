@@ -50,7 +50,7 @@ async def verify_status(self, token: str):
 
     try:
         payload = jwt.decode(
-            token, os.getenv("SECRET_KEY"), algorithms=["HS512"], audience="oj"
+            token, os.getenv("SECRET_KEY"), algorithms=["HS256"], audience="oj"
         )
         if payload:
             role_in_token = payload.get("role")
