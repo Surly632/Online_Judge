@@ -10,9 +10,10 @@ from config.redis import get_redis_blocked_token
 
 load_dotenv()
 
+
 class JwtBearer(HTTPBearer):
-    
-    def __init__(self, auto_error: bool = True, required_roles:list[str]=None):
+
+    def __init__(self, auto_error: bool = True, required_roles: list[str] = None):
         super(JwtBearer, self).__init__(auto_error=auto_error)
         self.required_roles = required_roles or ["User"]
 
@@ -30,7 +31,7 @@ class JwtBearer(HTTPBearer):
                 raise HTTPException(status_code=403, detail="Token is not valid")
 
             elif verify_status:
-                return credentials.credentials 
+                return credentials.credentials
 
             else:
                 raise HTTPException(status_code=403, detail="Invalid Token")
@@ -40,20 +41,28 @@ class JwtBearer(HTTPBearer):
                 status_code=403, detail="Authentication scheme not found!"
             )
 
-    async def verify_status(self, token: str):
-        reids = await get_redis_blocked_token()
-        if await reids.exists(token):
-            return False
-        try:
-            payload = jwt.decode(token, os.getenv("SECRET_KEY"), os.getenv("ALGORITHM"),audience='oj')
-            if payload:
-                role_in_token = payload.get('role')
-                if role_in_token in self.required_roles:    
-                    # print(f'role in token : {role_in_token}')
-                    return True
-                else:
-                    return False
 
-        except Exception as e:
-            print(f"Exception in verifying jwt-token: {e}")
-            return False
+async def verify_status(self, token: str):
+   
+    reids = await get_redis_blocked_token()
+    if await reids.exists(token):
+        raise HTTPException(status_code=403, detail="Token is blocked")
+
+    try:
+        payload = jwt.decode(
+            token, os.getenv("SECRET_KEY"), algorithms=["HS512"], audience="oj"
+        )
+        if payload:
+            role_in_token = payload.get("role")
+            if role_in_token in self.required_roles:
+                return True
+            else:
+                raise HTTPException(
+                    status_code=403, detail="Insufficient role permissions"
+                )
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=403, detail="Token has expired")
+    except jwt.JWTError:
+        raise HTTPException(status_code=403, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
